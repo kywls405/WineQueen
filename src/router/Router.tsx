@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import React from "react";
 import MainPage from "../pages/MainPage";
 import Splash from "../pages/Splash";
 
