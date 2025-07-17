@@ -21,17 +21,28 @@
 .section {
   display: flex;
   justify-content: center;
+  text-align: center;
   gap: 30px;
+  font-size: 40px;
 }
 
 .rectangle {
   border: 1px solid black;
   width: 500px;
-  height: 500px;
+  height: 600px;
 }
 
 .sensor {
   border: 1px solid black;
-  width: 600px;
-  height: 300px;
+  width: 500px;
+  height: 600px;
+}
+
+.rectangle img,
+.sensor img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
