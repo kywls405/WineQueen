@@ -1,9 +1,10 @@
 import React from "react";
+import Router from "./router/Router";
 
 function App() {
   return (
     <>
-      <div>와인킹</div>
+      <Router />
     </>
   );
 }
