@@ -8,14 +8,14 @@ const Splash = () => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       navigate("/main");
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timeout);
   }, [navigate]);
 
   return (
     <div>
-      <div className={`${styles.header} ${styles.splash}`}>🍷WineQueen🍷</div>
+      <div className={`${styles.splash} ${styles.header}`}>🍷WineQueen🍷</div>
     </div>
   );
 };
