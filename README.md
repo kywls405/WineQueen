@@ -1,69 +1,44 @@
-# React + TypeScript + Vite
+# 🍷 WineQueen
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**WineQueen**은 와인 애호가들을 위한 스마트 와인 냉장고입니다.  
+로봇팔과 센서 기반의 임베디드 시스템으로, 와인의 개봉과 보관을 자동화하며,  
+카메라 및 압력 센서 데이터를 실시간으로 시각화하는 인터랙티브한 UI를 제공합니다.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔧 주요 기능
 
-## Expanding the ESLint configuration
+### 🤖 로봇팔 제어
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 로봇팔이 와인병의 **뚜껑을 자동으로 열고 닫음**
+- 사용자는 별도의 물리적 조작 없이 **버튼 하나로 개봉/보관 가능**
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🌡️ 센서 데이터 출력
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- 로봇팔에 부착된 **카메라** 영상 및 **압력 센서** 데이터를 UI에 실시간 표시
+- 사용자에게 시각적/수치적 피드백 제공
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### ❄️ 스마트 와인냉장고
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- 와인의 **온도 및 보관 상태**를 안정적으로 유지
+- 향후 냉장온도 자동 조절 기능 확장 예정
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🧠 시스템 구성
+
+| 구성 요소          | 설명                                                 |
+| ------------------ | ---------------------------------------------------- |
+| 🎯 임베디드 시스템 | 라즈베리파이 기반 제어 시스템 (모터, 센서 제어 포함) |
+| 🎥 카메라          | 로봇팔에 장착되어 UI에 영상 전송                     |
+| 💡 압력 센서       | 와인 병의 개봉 상태 및 접촉 압력 측정                |
+| 💻 프론트엔드      | React 기반 UI (센서 값 출력, 영상 표시 등)           |
+| 🔌 통신 방식       | 시리얼 통신 or MQTT (구현 방식에 따라 선택)          |
+
+---
+
+## 🚀 실행 방법
+
+1. 링크 접속
+
+https://wine-queen.vercel.app/
