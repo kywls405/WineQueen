@@ -1,26 +1,33 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from ultralytics import YOLO
 import cv2
 import threading
 import json
 import time
+import os
 
 app = FastAPI()
 
+# CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # React 프론트에서 접근 가능
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-model = YOLO("yolov8n.pt")  # 모델 경로
-cap = cv2.VideoCapture(0)   # 필요시 번호 수정
+# YOLO 모델 로드
+model = YOLO("yolov8n.pt")
+cap = cv2.VideoCapture(8)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 clients = []
 
+# YOLO 감지 루프
 def detection_loop():
     while True:
         ret, frame = cap.read()
@@ -40,7 +47,10 @@ def detection_loop():
                 "conf": conf, "class_id": class_id, "class_name": class_name
             })
 
-        msg = json.dumps({"timestamp": time.time(), "detections": detections})
+        msg = json.dumps({
+            "timestamp": time.time(),
+            "detections": detections
+        })
 
         for ws in clients[:]:
             try:
@@ -48,11 +58,12 @@ def detection_loop():
             except:
                 clients.remove(ws)
 
-        time.sleep(0.05)  # 20fps
+        time.sleep(0.05)
 
 @app.on_event("startup")
-def startup_event():
-    threading.Thread(target=detection_loop, daemon=True).start()
+def on_startup():
+    thread = threading.Thread(target=detection_loop, daemon=True)
+    thread.start()
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -60,17 +71,43 @@ async def websocket_endpoint(websocket: WebSocket):
     clients.append(websocket)
     try:
         while True:
-            await websocket.receive_text()
+            await websocket.receive_text()  # keepalive 용도
     except:
         clients.remove(websocket)
 
 @app.get("/video_feed")
 def video_feed():
-    def gen_frames():
+    def generate():
         while True:
             ret, frame = cap.read()
             if not ret:
                 continue
+
+            # YOLO 추론 수행
+            results = model(frame, verbose=False)[0]
+
+            for box in results.boxes:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                conf = float(box.conf[0])
+                class_id = int(box.cls[0])
+                label = model.names[class_id]
+
+                # Bounding box 그리기
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, f"{label} {conf:.2f}", (x1, y1 - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
+            # JPEG 인코딩 후 전송
             _, buffer = cv2.imencode('.jpg', frame)
-            yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-    return StreamingResponse(gen_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
+            yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n")
+
+    return StreamingResponse(generate(), media_type="multipart/x-mixed-replace; boundary=frame")
+
+# ✅ React 정적 파일 서빙
+app.mount("/static", StaticFiles(directory="../frontend/dist/assets"), name="static")
+
+@app.get("/")
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str = ""):
+    index_path = os.path.abspath("../frontend/dist/index.html")
+    return FileResponse(index_path)

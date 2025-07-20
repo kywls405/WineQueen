@@ -8,23 +8,29 @@ const OpenWine = () => {
   useEffect(() => {
     const socket = new WebSocket("ws://192.168.240.97:8000/ws");
 
+    const pingInterval = setInterval(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send("ping");
+      }
+    }, 5000); // 5초 간격 ping
+
     socket.onopen = () => {
       console.log("✅ WebSocket 연결됨");
-      socket.send("ping");
     };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log("📡 YOLO 데이터 수신:", data);
-      // 👉 나중에 canvas로 바운딩박스 시각화에 활용
     };
 
     socket.onclose = () => {
       console.log("❌ WebSocket 연결 종료");
+      clearInterval(pingInterval);
     };
 
     return () => {
       socket.close();
+      clearInterval(pingInterval);
     };
   }, []);
 
@@ -39,8 +45,9 @@ const OpenWine = () => {
         <div className={styles.rectangle}>
           <img
             src="http://192.168.240.97:8000/video_feed"
-            alt="Live Stream"
+            alt="Yolo Stream"
             className={styles.rectangle_img}
+            crossOrigin="anonymous"
           />
         </div>
         <div className={styles.sensor}>추가예정</div>
