@@ -1,6 +1,17 @@
+# Python
 venv/
-*.py[cod]
-__pycache__/
-*.sovenv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Node.js / Vite
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+
+# 기타
+.env
