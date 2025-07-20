@@ -80,3 +80,15 @@ body::before {
 .rectangle > div:hover {
   background-color: #b0123d;
 }
+
+.splash {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* 전체 화면 */
+  background-color: rgba(0, 0, 0, 0.6); /* 어두운 반투명 배경 (optional) */
+  color: #fff;
+  font-size: 60px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
