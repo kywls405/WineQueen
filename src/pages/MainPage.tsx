@@ -47,12 +47,11 @@ const MainPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // 1분(60초) 이상이면 /close 이동
   useEffect(() => {
-    if (elapsed1 >= 120) {
+    if (elapsed1 >= 300) {
       localStorage.removeItem("startTime1");
       navigate("/close");
-    } else if (elapsed2 >= 120) {
+    } else if (elapsed2 >= 300) {
       localStorage.removeItem("startTime2");
       navigate("/close");
     }
@@ -68,16 +67,16 @@ const MainPage = () => {
       <div className={styles.wrapper}>
         <div className={styles.section}>
           <div>{formatTime(elapsed1)}</div>
-          <div className={styles.rectangle}>
+          <div onClick={handleClickOpen} className={styles.rectangle}>
             <img src={Wine_1} alt="와인1" />
-            <div onClick={handleClickOpen}>❶</div>
+            <div>1</div>
           </div>
         </div>
         <div className={styles.section}>
           <div>{formatTime(elapsed2)}</div>
-          <div className={styles.rectangle}>
+          <div onClick={handleClickOpen} className={styles.rectangle}>
             <img src={Wine_2} alt="와인2" />
-            <div onClick={handleClickOpen}>❷</div>
+            <div>2</div>
           </div>
         </div>
       </div>
