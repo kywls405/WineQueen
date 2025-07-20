@@ -1,0 +1,47 @@
+.header {
+  font-family: "Pretendard", sans-serif;
+  font-weight: 700;
+  font-size: 42px;
+  text-align: center;
+  padding: 20px 0;
+  color: #9f0a28; /* 와인 컬러 계열 */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  padding: 20px;
+  flex-wrap: wrap;
+}
+
+.rectangle {
+  width: 900px;
+  height: 650px;
+  border-radius: 20px;
+  background-color: #f4f4f4;
+  border: 2px solid #ccc;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  font-size: 36px;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sensor {
+  width: 300px;
+  height: 200px;
+  border-radius: 12px;
+  background-color: #fffbe6;
+  border: 2px solid #e3c07b;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  font-size: 28px;
+  font-weight: 600;
+  color: #664d03;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
