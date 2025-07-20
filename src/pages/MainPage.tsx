@@ -57,7 +57,13 @@ const MainPage = () => {
     }
   }, [elapsed1, elapsed2, navigate]);
 
-  const handleClickOpen = () => {
+  const handleClick1 = () => {
+    localStorage.removeItem("startTime1");
+    navigate("/open");
+  };
+
+  const handleClick2 = () => {
+    localStorage.removeItem("startTime2");
     navigate("/open");
   };
 
@@ -67,14 +73,14 @@ const MainPage = () => {
       <div className={styles.wrapper}>
         <div className={styles.section}>
           <div>{formatTime(elapsed1)}</div>
-          <div onClick={handleClickOpen} className={styles.rectangle}>
+          <div onClick={handleClick1} className={styles.rectangle}>
             <img src={Wine_1} alt="와인1" />
             <div>1</div>
           </div>
         </div>
         <div className={styles.section}>
           <div>{formatTime(elapsed2)}</div>
-          <div onClick={handleClickOpen} className={styles.rectangle}>
+          <div onClick={handleClick2} className={styles.rectangle}>
             <img src={Wine_2} alt="와인2" />
             <div>2</div>
           </div>
