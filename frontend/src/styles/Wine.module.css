@@ -18,8 +18,9 @@
 }
 
 .rectangle {
-  width: 900px;
-  height: 650px;
+  max-width: 900px;
+  height: 70vh;
+  width: 100%;
   border-radius: 20px;
   background-color: #f4f4f4;
   border: 2px solid #ccc;
@@ -32,17 +33,18 @@
 }
 .rectangle_img {
   width: 100%;
-  height: 100%;
+  height: 70vh;
   object-fit: cover;
   border-radius: 20px;
 }
+
 .sensor {
   width: 300px;
   height: 200px;
   border-radius: 12px;
   background-color: #fffbe6;
   border: 2px solid #e3c07b;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1  );
   font-size: 28px;
   font-weight: 600;
   color: #664d03;

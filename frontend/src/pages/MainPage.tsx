@@ -11,12 +11,20 @@ const formatTime = (seconds: number): string => {
   const secs = String(seconds % 60).padStart(2, "0");
   return `${hrs}:${mins}:${secs}`;
 };
+const getFormattedDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const date = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${date}`;
+};
 
 const MainPage = () => {
   const navigate = useNavigate();
 
   const [elapsed1, setElapsed1] = useState(0);
   const [elapsed2, setElapsed2] = useState(0);
+  const [currentDate, setCurrentDate] = useState(getFormattedDate());
 
   // 최초 시작 시간 저장 (localStorage)
   useEffect(() => {
@@ -43,6 +51,7 @@ const MainPage = () => {
       );
       setElapsed1(Math.floor((now - start1) / 1000));
       setElapsed2(Math.floor((now - start2) / 1000));
+      setCurrentDate(getFormattedDate());
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -72,6 +81,7 @@ const MainPage = () => {
       <div className={styles.header}>🍷WineQueen🍷</div>
       <div className={styles.wrapper}>
         <div className={styles.section}>
+          <div>{currentDate}</div>
           <div>{formatTime(elapsed1)}</div>
           <div onClick={handleClick1} className={styles.rectangle}>
             <img src={Wine_1} alt="와인1" />
@@ -79,6 +89,7 @@ const MainPage = () => {
           </div>
         </div>
         <div className={styles.section}>
+          <div>{currentDate}</div>
           <div>{formatTime(elapsed2)}</div>
           <div onClick={handleClick2} className={styles.rectangle}>
             <img src={Wine_2} alt="와인2" />
