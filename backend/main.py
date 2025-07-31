@@ -11,6 +11,8 @@ import time
 import os
 import asyncio
 
+import serial # 시리얼 통신 라이브러리 
+
 # --- 전역 변수 및 설정 ---
 # YOLO 모델 로드 (학습된 커스텀 모델)
 model = YOLO("best_wCrop.pt") 
@@ -33,6 +35,13 @@ except Exception as e:
     print(f"❌ 카메라 초기화 실패: {e}")
     cap = None
 
+# 시리얼 통신 설정
+SERIAL_PORT = '/dev/ttyACM0' 
+BAUD_RATE = 9600 # 아두이노 스케치에서 설정한 보드레이트와 동일하게 맞춰야 합니다.
+ser = None # 시리얼 객체 초기화
+
+
+
 # 클라이언트 및 데이터 공유를 위한 변수
 clients = []
 latest_annotated_frame = None
@@ -47,6 +56,16 @@ def detection_loop():
     if cap is None:
         print("카메라가 없으므로 감지 루프를 시작할 수 없습니다.")
         return
+
+    # 시리얼 포트 열기
+    try:
+        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+        print(f"✅ 시리얼 포트 {SERIAL_PORT} 열기 성공")
+        time.sleep(2) # 아두이노 보드 초기화 시간 대기
+    except Exception as e:
+        print(f"❌ 시리얼 포트 열기 실패: {e}")
+        ser = None
+
 
     while True:
         ret, frame = cap.read()
@@ -69,10 +88,13 @@ def detection_loop():
         
         detections = []
         # 2. 결과 처리 및 화면 그리기
-        for box in results.boxes:
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-            conf = float(box.conf[0])
-            class_id = int(box.cls[0])
+        serial_data_to_send = '2' # 기본값: 동일 (2)
+        
+        if results.boxes:
+            first_box = results.boxes[0]
+            x1, y1, x2, y2 = map(int, first_box.xyxy[0])
+            conf = float(first_box.conf[0])
+            class_id = int(first_box.cls[0])
             class_name = model.names[class_id]
             
             # --- [추가] 객체 중심의 상대 좌표 계산 ---
@@ -106,8 +128,33 @@ def detection_loop():
             cv2.putText(frame, coord_text, (x1, y1 - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
             # --- [수정] 끝 ---
+            # --- [추가] 시리얼 통신을 위한 데이터 결정 ---
+            if relative_x < 0:
+                serial_data_to_send = '0' # 와인이 카메라 중심보다 왼쪽에 있음
+            elif relative_x > 0:
+                serial_data_to_send = '1' # 와인이 카메라 중심보다 오른쪽에 있음
+            else:
+                serial_data_to_send = '2' # 와인이 카메라 중심과 동일 (거의 중앙)
+            # --- [추가] 끝 ---
+        else: # 감지된 객체가 없을 경우(예외처리)
+            serial_data_to_send = '3' # 예를 들어, 와인이 감지되지 않았음을 알리는 코드 (선택 사항)
+                                      # 아두이노에서 이 경우를 어떻게 처리할지 정의해야 함
 
-        # 3. 처리된 결과물을 스레드 안전하게 전역 변수에 저장
+
+        # 3. 시리얼 통신으로 데이터 전송
+        if ser and ser.is_open:
+            try:
+                ser.write(serial_data_to_send.encode('utf-8'))
+                # print(f"시리얼 데이터 전송: {serial_data_to_send}") # 디버깅용
+            except serial.SerialException as se:
+                print(f"시리얼 통신 오류: {se}")
+                # 오류 발생 시 시리얼 포트 다시 열기 시도 (선택 사항)
+                # ser.close()
+                # ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) 
+            except Exception as ex:
+                print(f"알 수 없는 오류 발생: {ex}")
+
+        # 4. 처리된 결과물을 스레드 안전하게 전역 변수에 저장
         with detections_lock:
             latest_detections_json = json.dumps({
                 "timestamp": time.time(),
@@ -119,7 +166,8 @@ def detection_loop():
             latest_annotated_frame = buffer.tobytes()
 
         time.sleep(0.03) # CPU 사용량 조절
-
+    if ser and ser.is_open:
+        ser.close() # 루프 종료 시 시리얼 포트 닫기
     cap.release()
 
 # --- 웹소켓 데이터 브로드캐스팅 (소비자) ---
