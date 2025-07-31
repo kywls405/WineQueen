@@ -13,15 +13,22 @@ import asyncio
 
 # --- 전역 변수 및 설정 ---
 # YOLO 모델 로드 (학습된 커스텀 모델)
-model = YOLO("best.pt") 
+model = YOLO("best_wCrop.pt") 
 
-# 카메라 설정 (인덱스는 환경에 맞게 조정)
+# 카메라 설정
 try:
-    cap = cv2.VideoCapture(8) 
+    # 💡 [변경점] 카메라 인덱스(8) 대신, 터미널에서 확인한 장치 경로를 직접 입력합니다.
+    # 예시로 /dev/video0 을 사용했으며, 실제 확인된 경로로 수정해주세요.
+    CAMERA_DEVICE_PATH = "/dev/video0" 
+    cap = cv2.VideoCapture(CAMERA_DEVICE_PATH)
+    
     if not cap.isOpened():
-        raise IOError("Cannot open webcam")
+        raise IOError(f"Cannot open webcam: {CAMERA_DEVICE_PATH}")
+        
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    print(f"✅ 카메라 초기화 성공: {CAMERA_DEVICE_PATH}")
+
 except Exception as e:
     print(f"❌ 카메라 초기화 실패: {e}")
     cap = None
@@ -47,8 +54,18 @@ def detection_loop():
             print("프레임 읽기 실패. 루프를 종료합니다.")
             break
         
+        # --- [추가] 카메라 중심 좌표 계산 및 표시 ---
+        h, w, _ = frame.shape
+        cam_center_x, cam_center_y = w // 2, h // 2
+
+        # 카메라 중심점에 파란색 원과 (0, 0) 텍스트 표시
+        cv2.circle(frame, (cam_center_x, cam_center_y), 5, (255, 0, 0), -1)
+        cv2.putText(frame, "(0, 0)", (cam_center_x + 10, cam_center_y + 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+        # --- [추가] 끝 ---
+
         # 1. AI 추론 (여기서 딱 한 번만 실행)
-        results = model(frame, verbose=False)[0]
+        results = model(frame, classes=0, conf=0.9, verbose=False)[0]
         
         detections = []
         # 2. 결과 처리 및 화면 그리기
@@ -58,16 +75,37 @@ def detection_loop():
             class_id = int(box.cls[0])
             class_name = model.names[class_id]
             
+            # --- [추가] 객체 중심의 상대 좌표 계산 ---
+            obj_center_x = (x1 + x2) // 2
+            obj_center_y = (y1 + y2) // 2
+            
+            # 카메라 중심을 (0,0)으로 하는 상대 좌표
+            relative_x = obj_center_x - cam_center_x
+            relative_y = cam_center_y - obj_center_y
+            # --- [추가] 끝 ---
+
             # 웹소켓으로 보낼 JSON 데이터 준비
             detections.append({
                 "x": x1, "y": y1, "w": x2 - x1, "h": y2 - y1,
-                "conf": conf, "class_id": class_id, "class_name": class_name
+                "conf": conf, "class_id": class_id, "class_name": class_name,
+                # --- [추가] JSON에 상대 좌표 추가 ---
+                "relative_center": {"x": relative_x, "y": relative_y}
             })
             
             # 스트리밍 영상에 바운딩 박스 그리기
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, f"{class_name} {conf:.2f}", (x1, y1 - 10),
+            
+            # --- [수정] 텍스트 위치 조정 및 상대 좌표 표시 ---
+            # 클래스 이름과 신뢰도 표시
+            label_text = f"{class_name} {conf:.2f}"
+            cv2.putText(frame, label_text, (x1, y1 - 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            
+            # 객체의 상대 좌표 (x, y) 표시
+            coord_text = f"({relative_x}, {relative_y})"
+            cv2.putText(frame, coord_text, (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+            # --- [수정] 끝 ---
 
         # 3. 처리된 결과물을 스레드 안전하게 전역 변수에 저장
         with detections_lock:
