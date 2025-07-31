@@ -6,7 +6,7 @@ const CloseWine = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const socket = new WebSocket("ws://192.168.240.97:8000/ws");
+    const socket = new WebSocket("ws://192.168.214.97:8000/ws");
 
     const pingInterval = setInterval(() => {
       if (socket.readyState === WebSocket.OPEN) {
@@ -49,7 +49,7 @@ const CloseWine = () => {
       <div className={styles.section}>
         <div className={styles.rectangle}>
           <img
-            src="http://192.168.240.97:8000/video_feed"
+            src="http://192.168.214.97:8000/video_feed"
             alt="Yolo Stream"
             className={styles.rectangle_img}
             crossOrigin="anonymous"

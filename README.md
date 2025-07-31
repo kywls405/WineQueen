@@ -1,8 +1,8 @@
-cd WineQueen/backend
-uvicorn main:app --host 0.0.0.0 --port 8000
-
 cd WineQueen
 source venv/bin/activate
+
+cd WineQueen/backend
+uvicorn main:app --host 0.0.0.0 --port 8000
 
 카메라 몇번인지 찾는법
 v4l2-ctl --list-devices
