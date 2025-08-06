@@ -1,19 +1,25 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import styles from "../styles/Wine.module.css";
 import { NetWorkIp } from "../constants/constants";
+import chevron from "../assets/chevron.svg";
 
 const OpenWine = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 쿼리 파라미터 추출
+  const queryParams = new URLSearchParams(location.search);
+  const wineNumber = queryParams.get("wine") || "0"; // 기본값은 0
 
   useEffect(() => {
-    const socket = new WebSocket(NetWorkIp);
+    const socket = new WebSocket("ws://" + NetWorkIp + "/ws");
 
     const pingInterval = setInterval(() => {
       if (socket.readyState === WebSocket.OPEN) {
         socket.send("ping");
       }
-    }, 5000); // 5초 간격 ping
+    }, 5000);
 
     socket.onopen = () => {
       console.log("✅ WebSocket 연결됨");
@@ -40,21 +46,22 @@ const OpenWine = () => {
   };
 
   return (
-    <>
-      <div className={styles.header}>뚜껑 여는 중...</div>
+    <div className={styles.wrapper}>
+      <div className={styles.goback}>
+        <img onClick={onClick} src={chevron} alt="뒤로가기" />
+      </div>
+      <div className={styles.header}>{wineNumber}번 와인</div>
       <div className={styles.section}>
         <div className={styles.rectangle}>
           <img
-            src={NetWorkIp + "/video_feed"}
+            src={"http://" + NetWorkIp + "/video_feed"}
             alt="Yolo Stream"
             className={styles.rectangle_img}
             crossOrigin="anonymous"
           />
         </div>
-        <div className={styles.sensor}>추가예정</div>
-        <button onClick={onClick}>돌아가기</button>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -1,1 +1,1 @@
-export const NetWorkIp = "ws://192.168.112.97:8000/ws";
+export const NetWorkIp = "192.168.112.97:8000";

@@ -1,36 +1,37 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import styles from "../styles/Wine.module.css";
 import { NetWorkIp } from "../constants/constants";
+import chevron from "../assets/chevron.svg";
 
 const CloseWine = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 쿼리 파라미터 추출
+  const queryParams = new URLSearchParams(location.search);
+  const wineNumber = queryParams.get("wine") || "0"; // 기본값은 0
 
   useEffect(() => {
-    const socket = new WebSocket(NetWorkIp);
+    const socket = new WebSocket("ws://" + NetWorkIp + "/ws");
 
     const pingInterval = setInterval(() => {
       if (socket.readyState === WebSocket.OPEN) {
         socket.send("ping");
       }
-    }, 5000); // 5초 간격 ping
+    }, 5000);
 
     socket.onopen = () => {
-      console.log("✅ WebSocket 연결됨 (CloseWine)");
+      console.log("✅ WebSocket 연결됨");
     };
 
     socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log("📡 수신된 데이터 (CloseWine):", data);
-        // TODO: 압력센서 상태 업데이트 구현 예정
-      } catch (e) {
-        console.error("❗ JSON 파싱 오류 (CloseWine):", e);
-      }
+      const data = JSON.parse(event.data);
+      console.log("📡 YOLO 데이터 수신:", data);
     };
 
     socket.onclose = () => {
-      console.log("❌ WebSocket 연결 종료 (CloseWine)");
+      console.log("❌ WebSocket 연결 종료");
       clearInterval(pingInterval);
     };
 
@@ -40,26 +41,26 @@ const CloseWine = () => {
     };
   }, []);
 
-  const handleBack = () => {
+  const onClick = () => {
     navigate("/main");
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>뚜껑 닫는 중...</div>
+    <div className={styles.wrapper}>
+      <div className={styles.goback}>
+        <img onClick={onClick} src={chevron} alt="뒤로가기" />
+      </div>
+      <div className={styles.header}>{wineNumber}번 와인</div>
       <div className={styles.section}>
         <div className={styles.rectangle}>
           <img
-            src={NetWorkIp + "/video_feed"}
+            src={"http://" + NetWorkIp + "/video_feed"}
             alt="Yolo Stream"
             className={styles.rectangle_img}
             crossOrigin="anonymous"
           />
         </div>
-        <div className={styles.sensor}>압력센서 값 표시 예정</div>
-        <button className={styles.backButton} onClick={handleBack}>
-          돌아가기
-        </button>
+        <div className={styles.sensor}>와인 속 기압</div>
       </div>
     </div>
   );
