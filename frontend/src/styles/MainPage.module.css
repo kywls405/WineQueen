@@ -1,3 +1,12 @@
+.header {
+  display: flex;
+  width: 644px;
+  height: 253px;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -16,8 +25,8 @@
 
 .rectangle {
   position: relative;
-  width: 320px;
-  height: 420px;
+  width: 200px;
+  height: 355px;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
@@ -36,32 +45,14 @@
   display: block;
 }
 
-.rectangle > div {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  background-color: rgba(159, 10, 40, 0.8); /* 반투명 와인색 */
-  color: white;
-  padding: 10px 16px;
-  border-radius: 100%;
-  font-size: 24px;
-  font-weight: bold;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: background-color 0.2s ease;
-}
-
 .rectangle > div:hover {
   background-color: #b0123d;
 }
 
 .splash {
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* 전체 화면 */
-  background-color: rgba(0, 0, 0, 0.6); /* 어두운 반투명 배경 (optional) */
-  color: #fff;
-  font-size: 60px;
-  font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }

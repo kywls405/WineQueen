@@ -15,7 +15,7 @@ const Splash = () => {
   }, [navigate]);
 
   return (
-    <div className={`${styles.splash} ${styles.header}`}>
+    <div className={`${styles.splash}`}>
       <img src={Icon} alt="아이콘" />
     </div>
   );
