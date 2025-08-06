@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/MainPage.module.css";
+import Icon from "../assets/Icon.svg";
 
 const Splash = () => {
   const navigate = useNavigate();
@@ -14,8 +15,8 @@ const Splash = () => {
   }, [navigate]);
 
   return (
-    <div>
-      <div className={`${styles.splash} ${styles.header}`}>🍷WineQueen🍷</div>
+    <div className={`${styles.splash}`}>
+      <img src={Icon} alt="아이콘" />
     </div>
   );
 };
