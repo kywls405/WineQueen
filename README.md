@@ -44,3 +44,28 @@ yarn dev --host
 YOLOv8 실행, 비디오 스트리밍, WebSocket, 센서 처리	사용자 UI, React 상태 관리, 실시간 표시
 FastAPI로 API/WS 응답 처리	Vite/React로 실시간 대시보드 표시
 Python 환경 (venv)	Node.js 환경 (yarn/npm)
+
+////////////////////////////////////////////////////////////////////////////
+카메라
+
+명령어
+Bash
+ls /dev/video*
+결과 예시:
+
+/dev/video0  /dev/video1
+
+상세 정보 확인 (v4l2-utils 설치 필요)
+명령어
+Bash
+v4l2-ctl --list-devices
+결과 예시:ㄴ
+
+HD Pro Webcam C920 (usb-0000:00:14.0-1):
+        /dev/video0
+        /dev/video1
+
+Integrated Camera (usb-0000:00:1a.0-1.2):
+        /dev/video2
+        /dev/video3
+해석: C920 웹캠이 video0과 video1에, 내장 카메라가 video2와 video3에 할당된 것을 명확히 알 수 있습니다.

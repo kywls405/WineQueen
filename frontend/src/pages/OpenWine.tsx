@@ -6,7 +6,7 @@ const OpenWine = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const socket = new WebSocket("ws://192.168.214.97:8000/ws");
+    const socket = new WebSocket("ws://192.168.112.97:8000/ws");
 
     const pingInterval = setInterval(() => {
       if (socket.readyState === WebSocket.OPEN) {

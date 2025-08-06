@@ -19,8 +19,6 @@ model = YOLO("best_wCrop.pt")
 
 # 카메라 설정
 try:
-    # 💡 [변경점] 카메라 인덱스(8) 대신, 터미널에서 확인한 장치 경로를 직접 입력합니다.
-    # 예시로 /dev/video0 을 사용했으며, 실제 확인된 경로로 수정해주세요.
     CAMERA_DEVICE_PATH = "/dev/video0" 
     cap = cv2.VideoCapture(CAMERA_DEVICE_PATH)
     
@@ -39,8 +37,6 @@ except Exception as e:
 SERIAL_PORT = '/dev/ttyACM0' 
 BAUD_RATE = 9600 # 아두이노 스케치에서 설정한 보드레이트와 동일하게 맞춰야 합니다.
 ser = None # 시리얼 객체 초기화
-
-
 
 # 클라이언트 및 데이터 공유를 위한 변수
 clients = []
