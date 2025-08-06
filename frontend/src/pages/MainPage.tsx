@@ -25,17 +25,25 @@ const MainPage = () => {
   }, []);
 
   const handleClick1 = () => {
-    const now = new Date().toISOString();
-    localStorage.setItem("staratTime1", now);
-    setStartTime1(now);
     navigate("/open?wine=1");
   };
 
+  const handleClose1 = () => {
+    const now = new Date().toISOString();
+    localStorage.setItem("startTime1", now);
+    setStartTime1(now);
+    navigate("/close?wine=1");
+  };
+
   const handleClick2 = () => {
+    navigate("/open?wine=2");
+  };
+
+  const handleClose2 = () => {
     const now = new Date().toISOString();
     localStorage.setItem("startTime2", now);
-    setStartTime2(now);
-    navigate("/open?wine=2");
+    setStartTime1(now);
+    navigate("/close?wine=2");
   };
 
   const handleReset1 = () => {
@@ -54,7 +62,7 @@ const MainPage = () => {
         <div>
           <span style={{ color: "#FFDB58" }}>개봉/밀봉</span>
           <span style={{ color: "#FFF" }}>할</span>
-          <span style={{ color: "#2C001E" }}>와인</span>
+          <span style={{ color: "#2C001E" }}> 와인</span>
           <span style={{ color: "#FFF" }}>을</span>
         </div>
         <div>
@@ -64,6 +72,14 @@ const MainPage = () => {
 
       <div className={styles.wrapper}>
         <div className={styles.section}>
+          <div>
+            <button onClick={handleClick1} className={styles.button}>
+              개봉
+            </button>
+            <button onClick={handleClose1} className={styles.button}>
+              밀봉
+            </button>
+          </div>
           <div onClick={handleClick1} className={styles.rectangle}>
             <img src={Wine_1} alt="와인1" />
           </div>
@@ -77,6 +93,14 @@ const MainPage = () => {
         </div>
 
         <div className={styles.section}>
+          <div>
+            <button onClick={handleClick2} className={styles.button}>
+              개봉
+            </button>
+            <button onClick={handleClose2} className={styles.button}>
+              밀봉
+            </button>
+          </div>
           <div onClick={handleClick2} className={styles.rectangle}>
             <img src={Wine_2} alt="와인2" />
           </div>

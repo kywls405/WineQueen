@@ -20,20 +20,6 @@
   justify-content: center;
   margin-bottom: 55px;
 }
-
-.header .circle {
-  width: 36px;
-  height: 36px;
-  background-color: #1e1e1e;
-  color: white;
-  border-radius: 50%;
-  font-size: 20px;
-  font-weight: 600;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 /* 전체 내용 감싸는 wrapper */
 .section {
   display: flex;

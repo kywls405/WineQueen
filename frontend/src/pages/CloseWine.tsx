@@ -50,7 +50,7 @@ const CloseWine = () => {
       <div className={styles.goback}>
         <img onClick={onClick} src={chevron} alt="뒤로가기" />
       </div>
-      <div className={styles.header}>{wineNumber}번 와인</div>
+      <div className={styles.header}>{wineNumber}번 와인 밀봉</div>
       <div className={styles.section}>
         <div className={styles.rectangle}>
           <img
