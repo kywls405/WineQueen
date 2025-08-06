@@ -1,3 +1,4 @@
+프론트엔드 배포 링크: https://wine-queen-74pol4zkk-junseochois-projects.vercel.app/main
 cd WineQueen/backend
 uvicorn main:app --host 0.0.0.0 --port 8000
 
@@ -34,13 +35,13 @@ yarn dev --host
 🔹 사이트 내부에서 /video_feed, /ws로 백엔드와 통신함
 
 🧭 요약 순서표
-단계	실행 위치	명령어
-1️⃣	~/WineQueen/	source venv/bin/activate
-2️⃣	~/WineQueen/backend/	uvicorn main:app --host 0.0.0.0 --port 8000
-3️⃣	~/WineQueen/frontend/	yarn dev --host
+단계 실행 위치 명령어
+1️⃣ ~/WineQueen/ source venv/bin/activate
+2️⃣ ~/WineQueen/backend/ uvicorn main:app --host 0.0.0.0 --port 8000
+3️⃣ ~/WineQueen/frontend/ yarn dev --host
 
 💡 왜 이렇게 나누는가?
-백엔드	프론트엔드
-YOLOv8 실행, 비디오 스트리밍, WebSocket, 센서 처리	사용자 UI, React 상태 관리, 실시간 표시
-FastAPI로 API/WS 응답 처리	Vite/React로 실시간 대시보드 표시
-Python 환경 (venv)	Node.js 환경 (yarn/npm)
+백엔드 프론트엔드
+YOLOv8 실행, 비디오 스트리밍, WebSocket, 센서 처리 사용자 UI, React 상태 관리, 실시간 표시
+FastAPI로 API/WS 응답 처리 Vite/React로 실시간 대시보드 표시
+Python 환경 (venv) Node.js 환경 (yarn/npm)
