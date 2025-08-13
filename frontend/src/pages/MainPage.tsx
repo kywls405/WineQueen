@@ -1,61 +1,51 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import styles from "../styles/MainPage.module.css";
 import Wine_1 from "../assets/Wine_1.svg";
-import Wine_2 from "../assets/Wine_2.svg";
 
-const formatDate = (dateStr: string | null): string => {
+const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "밀봉 기록 없음";
-
   const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "밀봉 기록 없음";
-
-  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+  return isNaN(date.getTime())
+    ? "밀봉 기록 없음"
+    : `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 };
 
 const MainPage = () => {
   const navigate = useNavigate();
-
-  const [startTime1, setStartTime1] = useState<string | null>(null);
-  const [startTime2, setStartTime2] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
-
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // 버튼별 동작 정의
-  const buttonActions = [
-    () => navigate("/open?wine=1"), // 0
-    () => {
-      const now = new Date().toISOString();
-      localStorage.setItem("startTime1", now);
-      setStartTime1(now);
-      navigate("/close?wine=1");
-    }, // 1
-    () => {
-      localStorage.removeItem("startTime1");
-      setStartTime1(null);
-    }, // 2
-    () => navigate("/open?wine=2"), // 3
-    () => {
-      const now = new Date().toISOString();
-      localStorage.setItem("startTime2", now);
-      setStartTime2(now);
-      navigate("/close?wine=2");
-    }, // 4
-    () => {
-      localStorage.removeItem("startTime2");
-      setStartTime2(null);
-    }, // 5
-  ];
+  const setStorage = (value: string | null) => {
+    if (value) localStorage.setItem("startTime", value);
+    else localStorage.removeItem("startTime");
+  };
 
+  const handleOpen = () => navigate("/open?wine=1");
+
+  const handleClose = () => {
+    const now = new Date().toISOString();
+    setStartTime(now);
+    setStorage(now);
+    navigate("/close?wine=1");
+  };
+
+  const handleReset = () => {
+    setStartTime(null);
+    setStorage(null);
+  };
+
+  const buttonActions = [handleOpen, handleClose, handleReset];
+
+  // 초기값 로드
   useEffect(() => {
-    // 로컬스토리지에서 초기값 불러오기
-    setStartTime1(localStorage.getItem("startTime1"));
-    setStartTime2(localStorage.getItem("startTime2"));
+    setStartTime(localStorage.getItem("startTime"));
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  // 키보드 네비게이션
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") {
         setFocusedIndex((prev) => (prev + 1) % buttonActions.length);
       } else if (e.key === "ArrowLeft") {
@@ -65,11 +55,14 @@ const MainPage = () => {
       } else if (e.key === "Enter") {
         buttonActions[focusedIndex]?.();
       }
-    };
+    },
+    [focusedIndex, buttonActions]
+  );
 
+  useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [focusedIndex]);
+  }, [handleKeyDown]);
 
   useEffect(() => {
     buttonRefs.current[focusedIndex]?.focus();
@@ -90,62 +83,35 @@ const MainPage = () => {
       </div>
 
       <div className={styles.wrapper}>
-        {/* 와인 1 */}
         <div className={styles.section}>
           <div>
             <button
               ref={(el) => (buttonRefs.current[0] = el)}
               className={styles.button}
+              onClick={handleOpen}
             >
               개봉
             </button>
             <button
               ref={(el) => (buttonRefs.current[1] = el)}
               className={styles.button}
+              onClick={handleClose}
             >
               밀봉
             </button>
           </div>
+
           <div className={styles.rectangle}>
             <img src={Wine_1} alt="와인1" />
           </div>
+
           <div className={styles.data}>
-            {startTime1 && <div>최근 밀봉 일시</div>}
-            <div>{formatDate(startTime1)}</div>
+            {startTime && <div>최근 밀봉 일시</div>}
+            <div>{formatDate(startTime)}</div>
             <button
               ref={(el) => (buttonRefs.current[2] = el)}
               className={styles.button}
-            >
-              날짜 초기화
-            </button>
-          </div>
-        </div>
-
-        {/* 와인 2 */}
-        <div className={styles.section}>
-          <div>
-            <button
-              ref={(el) => (buttonRefs.current[3] = el)}
-              className={styles.button}
-            >
-              개봉
-            </button>
-            <button
-              ref={(el) => (buttonRefs.current[4] = el)}
-              className={styles.button}
-            >
-              밀봉
-            </button>
-          </div>
-          <div className={styles.rectangle}>
-            <img src={Wine_2} alt="와인2" />
-          </div>
-          <div className={styles.data}>
-            {startTime2 && <div>최근 밀봉 일시</div>}
-            <div>{formatDate(startTime2)}</div>
-            <button
-              ref={(el) => (buttonRefs.current[5] = el)}
-              className={styles.button}
+              onClick={handleReset}
             >
               날짜 초기화
             </button>
