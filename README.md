@@ -4,6 +4,12 @@ WineQueen is an embedded system that seals and opens wine bottles automatically.
 
 ![WineQueen system overview](assets/Overview.svg)
 
+## Development demo
+
+[![Watch the WineQueen development demo](https://img.youtube.com/vi/y1499OYCkKM/hqdefault.jpg)](https://www.youtube.com/watch?v=y1499OYCkKM)
+
+The development video demonstrates the integrated prototype and its automatic sealing and opening workflow. For the full engineering narrative, see the [development report summary](docs/development-report.md) or the [original 18-page report](docs/WineQueen-development-report.pdf).
+
 ## What it does
 
 - Detects the bottle opening with a YOLO-based vision pipeline.
@@ -27,6 +33,7 @@ The Raspberry Pi hosts the vision pipeline and FastAPI server. The Arduino handl
 .
 |-- assets/       Architecture diagrams and project images
 |-- backend/      FastAPI, OpenCV, YOLO, serial bridge, and state control
+|-- docs/         Development report and technical summary
 |-- embedded/     Arduino firmware for the mechanical system
 `-- frontend/     React and TypeScript device interface
 ```
@@ -70,4 +77,4 @@ This repository documents a prototype. Verify motor direction, travel limits, em
 
 ## Project context
 
-WineQueen was developed as a team entry for the 2025 Embedded Software Contest. This public version focuses on the system architecture and implementation; datasets, trained weights, videos, administrative documents, and personal information are excluded.
+WineQueen was developed as team 1091's entry in the free competition category of the 23rd Embedded Software Contest. This public version includes the implementation, demonstration link, and development report; datasets, trained weights, raw videos, and administrative documents are excluded.
