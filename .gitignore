@@ -1,17 +1,24 @@
 # Python
-venv/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+.venv/
+venv/
+.env
 
-# Node.js / Vite
+# Model and data artifacts
+*.pt
+*.onnx
+*.engine
+datasets/
+runs/
+
+# Frontend
 node_modules/
 dist/
 .vite/
 
-# OS
+# Editors and operating systems
+.idea/
+.vscode/
 .DS_Store
-
-# 기타
-.env
+Thumbs.db

@@ -18,7 +18,7 @@ const router = createBrowserRouter([
     element: <OpenWine />,
   },
   {
-    path: "/close",
+    path: "/seal",
     element: <CloseWine />,
   },
 ]);

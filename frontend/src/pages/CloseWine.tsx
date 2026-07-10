@@ -1,66 +1,75 @@
-import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef } from "react";
 import styles from "../styles/Wine.module.css";
-import { NetWorkIp } from "../constants/constants";
-import chevron from "../assets/chevron.svg";
+import { getHttpUrl, getWebSocketUrl } from "../constants/constants";
+import { subscribeWS } from "../lib/ws";
 
 const CloseWine = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const firedRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
 
-  // 쿼리 파라미터 추출
-  const queryParams = new URLSearchParams(location.search);
-  const wineNumber = queryParams.get("wine") || "0"; // 기본값은 0
+  const finish = useCallback(() => {
+    if (firedRef.current) return;
+    firedRef.current = true;
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    navigate("/main");
+  }, [navigate]);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://" + NetWorkIp + "/ws");
-
-    const pingInterval = setInterval(() => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send("ping");
-      }
-    }, 5000);
-
-    socket.onopen = () => {
-      console.log("✅ WebSocket 연결됨");
-    };
-
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("📡 YOLO 데이터 수신:", data);
-    };
-
-    socket.onclose = () => {
-      console.log("❌ WebSocket 연결 종료");
-      clearInterval(pingInterval);
-    };
-
+    timerRef.current = window.setTimeout(finish, 30_000);
     return () => {
-      socket.close();
-      clearInterval(pingInterval);
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
+  }, [finish]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeWS(getWebSocketUrl("/ws"), (event) => {
+      let data: unknown = event.data;
+      if (typeof data === "string") {
+        const text = data.trim();
+        if (text === "3") return finish();
+        if (text === "ping" || text === "pong") return;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          return;
+        }
+      }
+
+      const message = data as { type?: string; value?: unknown };
+      if (message?.type === "button" && Number(message.value) === 3) finish();
+    });
+    return unsubscribe;
+  }, [finish]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "3" || event.code === "Numpad3") finish();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [finish]);
+
+  useEffect(() => {
+    fetch(getHttpUrl("/control/seal"), { method: "POST" }).catch(() => {});
+    return () => {
+      fetch(getHttpUrl("/control/stop"), { method: "POST" }).catch(() => {});
     };
   }, []);
 
-  const onClick = () => {
-    navigate("/main");
-  };
-
   return (
     <div className={styles.wrapper}>
-      <div className={styles.goback}>
-        <img onClick={onClick} src={chevron} alt="뒤로가기" />
-      </div>
-      <div className={styles.header}>{wineNumber}번 와인 밀봉</div>
+      <div className={styles.header}>Seal the Wine</div>
       <div className={styles.section}>
         <div className={styles.rectangle}>
           <img
-            src={"http://" + NetWorkIp + "/video_feed"}
-            alt="Yolo Stream"
+            src={getHttpUrl("/video_feed")}
+            alt="Live bottle alignment"
             className={styles.rectangle_img}
             crossOrigin="anonymous"
           />
         </div>
-        <div className={styles.sensor}>와인 속 기압</div>
       </div>
     </div>
   );

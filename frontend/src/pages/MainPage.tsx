@@ -1,42 +1,146 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "../styles/MainPage.module.css";
 import Wine_1 from "../assets/Wine_1.svg";
+import { getWebSocketUrl } from "../constants/constants";
+import { subscribeWS } from "../lib/ws";
+
+const formatNow = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const weekday = d.toLocaleDateString("en-US", { weekday: "short" }); // ex) Mon / 월
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return `${y}/${m}/${day} (${weekday}) ${hh}:${mm}:${ss}`;
+};
 
 const formatDate = (dateStr: string | null) => {
-  if (!dateStr) return "밀봉 기록 없음";
+  if (!dateStr) return "No record of sealing";
   const date = new Date(dateStr);
   return isNaN(date.getTime())
-    ? "밀봉 기록 없음"
-    : `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    ? "No record of sealing"
+    : `${date.getFullYear()}/${
+        date.getMonth() + 1
+      }/${date.getDate()} , ${date.getHours()}:${date.getMinutes()}`;
+};
+
+type ServerMessage = {
+  type?: string;
+  value?: unknown;
+  page?: unknown;
 };
 
 const MainPage = () => {
   const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const [startTime, setStartTime] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const handleWSMessage = useCallback((e: MessageEvent) => {
+    let d: unknown = e.data;
+
+    // 문자열 프레임(하트비트/레거시) 처리
+    if (typeof d === "string") {
+      const t = d.trim?.();
+      if (t === "ping" || t === "pong") return;
+      try {
+        d = JSON.parse(t);
+      } catch {
+        const n = Number(t);
+        if (!Number.isNaN(n)) {
+          const idx = n - 1;
+          if (idx >= 0) buttonRefs.current[idx]?.click?.();
+        }
+        return;
+      }
+    }
+
+    if (!d || typeof d !== "object") return;
+    const msg = d as ServerMessage;
+
+    switch (msg.type) {
+      case "button": {
+        const idx = Number(msg.value) - 1;
+        if (idx >= 0) buttonRefs.current[idx]?.click?.();
+        break;
+      }
+      case "redirect": {
+        // 서버가 "/seal" | "/open" 을 보냄 → 그대로 이동
+        const page = String(msg.page || "");
+        if (page === "/seal") {
+          const now = new Date().toISOString();
+          setStartTime(now);
+          setStorage(now);
+          navigate(page);
+        } else if (page === "/open") {
+          setStartTime(null);
+          localStorage.removeItem("startTime");
+          navigate(page);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    const url = getWebSocketUrl("/ws");
+    // A) 원본 그대로 보기 (항상 출력)
+    const offRaw = subscribeWS(url, (e) => {
+      const d = e.data;
+      // 메시지 타입/길이까지 같이 출력
+      if (typeof d === "string") {
+        console.debug("[WS RAW text]", d);
+      } else if (d instanceof Blob) {
+        console.debug("[WS RAW blob]", d);
+      } else if (d instanceof ArrayBuffer) {
+        console.debug("[WS RAW buffer]", new Uint8Array(d));
+      } else {
+        console.debug("[WS RAW]", d);
+      }
+    });
+    const off = subscribeWS(url, handleWSMessage);
+    return () => {
+      off();
+      offRaw();
+    };
+  }, [handleWSMessage]);
 
   const setStorage = (value: string | null) => {
     if (value) localStorage.setItem("startTime", value);
     else localStorage.removeItem("startTime");
   };
 
-  const handleOpen = () => navigate("/open?wine=1");
+  const handleReset = useCallback(() => {
+    setStartTime(null);
+    setStorage(null);
+  }, []);
 
-  const handleClose = () => {
+  const handleOpen = useCallback(() => {
+    navigate("/open");
+    handleReset();
+  }, [handleReset, navigate]);
+
+  const handleClose = useCallback(() => {
     const now = new Date().toISOString();
     setStartTime(now);
     setStorage(now);
-    navigate("/close?wine=1");
-  };
+    navigate("/seal");
+  }, [navigate]);
 
-  const handleReset = () => {
-    setStartTime(null);
-    setStorage(null);
-  };
-
-  const buttonActions = [handleOpen, handleClose, handleReset];
+  const buttonActions = useMemo(
+    () => [handleClose, handleOpen, handleReset],
+    [handleClose, handleOpen, handleReset]
+  );
 
   // 초기값 로드
   useEffect(() => {
@@ -70,34 +174,43 @@ const MainPage = () => {
 
   return (
     <div className={styles.containerWrapper}>
+      <div className={styles.topbar} role="timer" aria-live="polite">
+        {formatNow(currentTime)}
+      </div>
       <div className={styles.header}>
         <div>
-          <span style={{ color: "#FFDB58" }}>개봉/밀봉</span>
-          <span style={{ color: "#FFF" }}>할</span>
-          <span style={{ color: "#2C001E" }}> 와인</span>
-          <span style={{ color: "#FFF" }}>을</span>
+          <span style={{ color: "#FFF" }}>Please select </span>
+          <span style={{ color: "#FFF" }}>the </span>
         </div>
         <div>
-          <span style={{ color: "#FFF" }}>선택해 주세요</span>
+          <span style={{ color: "#FFDB58" }}> Seal </span>
+          <span style={{ color: "#FFF" }}>or</span>
+          <span style={{ color: "#FFDB58" }}> Open </span>
+          <span style={{ color: "#2C001E" }}>Wine </span>
+          <span style={{ color: "#FFF" }}>button.</span>
         </div>
       </div>
 
       <div className={styles.wrapper}>
         <div className={styles.section}>
-          <div>
+          <div className={styles.button_wrapper}>
             <button
-              ref={(el) => (buttonRefs.current[0] = el)}
-              className={styles.button}
-              onClick={handleOpen}
-            >
-              개봉
-            </button>
-            <button
-              ref={(el) => (buttonRefs.current[1] = el)}
+              ref={(el) => {
+                buttonRefs.current[0] = el;
+              }}
               className={styles.button}
               onClick={handleClose}
             >
-              밀봉
+              Seal
+            </button>
+            <button
+              ref={(el) => {
+                buttonRefs.current[1] = el;
+              }}
+              className={styles.button}
+              onClick={handleOpen}
+            >
+              Open
             </button>
           </div>
 
@@ -106,15 +219,8 @@ const MainPage = () => {
           </div>
 
           <div className={styles.data}>
-            {startTime && <div>최근 밀봉 일시</div>}
+            {startTime && <div>Last sealed date</div>}
             <div>{formatDate(startTime)}</div>
-            <button
-              ref={(el) => (buttonRefs.current[2] = el)}
-              className={styles.button}
-              onClick={handleReset}
-            >
-              날짜 초기화
-            </button>
           </div>
         </div>
       </div>
